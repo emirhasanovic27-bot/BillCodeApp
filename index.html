@@ -21,6 +21,9 @@
       --red: #c0392b;
       --red-bg: #fff0ee;
       --red-border: #f5c4bc;
+      --amber: #92400e;
+      --amber-bg: #fffbeb;
+      --amber-border: #f59e0b;
       --radius: 10px;
       --radius-lg: 16px;
       --mono: 'DM Mono', monospace;
@@ -75,40 +78,65 @@
     .btn-danger { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
     .btn-danger:hover { background: #ffe4e0; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
     .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
-    .stat-card.stat-flagged { background: var(--red-bg); border-color: var(--red-border); }
-    .stat-card .val { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; font-family: var(--mono); }
-    .stat-card.stat-flagged .val { color: var(--red); }
-    .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
-    .stat-card.stat-flagged .lbl { color: #d4796a; }
+    .stat-card.stat-red { background: var(--red-bg); border-color: var(--red-border); }
+    .stat-card.stat-amber { background: var(--amber-bg); border-color: var(--amber-border); }
+    .stat-card .val { font-size: 26px; font-weight: 300; letter-spacing: -0.03em; font-family: var(--mono); }
+    .stat-card.stat-red .val { color: var(--red); }
+    .stat-card.stat-amber .val { color: var(--amber); }
+    .stat-card .lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card.stat-red .lbl { color: #d4796a; }
+    .stat-card.stat-amber .lbl { color: #b45309; }
 
-    #flagged-banner { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 20px; }
-    #flagged-banner h3 { font-size: 14px; font-weight: 500; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    /* Banners */
+    .banner { border-radius: var(--radius-lg); padding: 18px 22px; margin-bottom: 16px; }
+    .banner-red { background: var(--red-bg); border: 1px solid var(--red-border); }
+    .banner-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); }
+    .banner h3 { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .banner-red h3 { color: var(--red); }
+    .banner-amber h3 { color: var(--amber); }
     .flagged-pills { display: flex; flex-wrap: wrap; gap: 8px; }
-    .flagged-pill { font-family: var(--mono); font-size: 12px; background: white; border: 1px solid var(--red-border); color: var(--red); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.1s; }
-    .flagged-pill:hover { background: #ffe4e0; }
+    .pill { font-family: var(--mono); font-size: 12px; border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.1s; }
+    .pill-red { background: white; border: 1px solid var(--red-border); color: var(--red); }
+    .pill-red:hover { background: #ffe4e0; }
+    .pill-amber { background: white; border: 1px solid var(--amber-border); color: var(--amber); }
+    .pill-amber:hover { background: #fef3c7; }
 
-    .search-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
-    #search-input { flex: 1; font-family: var(--sans); font-size: 14px; padding: 11px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
+    .search-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    #search-input { flex: 1; min-width: 160px; font-family: var(--sans); font-size: 14px; padding: 11px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
     #search-input:focus { border-color: var(--accent); }
     #search-input::placeholder { color: var(--text-muted); }
-    .filter-toggle { font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 10px 16px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--red-border); background: var(--red-bg); color: var(--red); transition: background 0.12s; white-space: nowrap; }
-    .filter-toggle.active { background: var(--red); color: white; border-color: var(--red); }
+    .filter-btn { font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 10px 14px; border-radius: var(--radius); cursor: pointer; white-space: nowrap; transition: background 0.12s; }
+    .filter-btn-red { border: 1px solid var(--red-border); background: var(--red-bg); color: var(--red); }
+    .filter-btn-red.active { background: var(--red); color: white; border-color: var(--red); }
+    .filter-btn-amber { border: 1px solid var(--amber-border); background: var(--amber-bg); color: var(--amber); }
+    .filter-btn-amber.active { background: var(--amber); color: white; border-color: var(--amber); }
 
     .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-    .table-head { display: grid; grid-template-columns: 28px 220px 1fr 70px; gap: 12px; padding: 10px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .table-head { display: grid; grid-template-columns: 60px 200px 1fr 70px; gap: 12px; padding: 10px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
     .table-head span { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
 
-    .table-row { display: grid; grid-template-columns: 28px 220px 1fr 70px; gap: 12px; padding: 12px 20px; align-items: start; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    .table-row { display: grid; grid-template-columns: 60px 200px 1fr 70px; gap: 12px; padding: 12px 20px; align-items: start; border-bottom: 1px solid var(--border); transition: background 0.1s; }
     .table-row:last-child { border-bottom: none; }
     .table-row:hover { background: var(--surface2); }
-    .table-row.is-flagged { background: var(--red-bg); }
-    .table-row.is-flagged:hover { background: #ffe4e0; }
+    .table-row.row-team { background: var(--red-bg); }
+    .table-row.row-team:hover { background: #ffe4e0; }
+    .table-row.row-level { background: var(--amber-bg); }
+    .table-row.row-level:hover { background: #fef3c7; }
+    .table-row.row-both { background: #fff0f0; border-left: 3px solid var(--red); }
+    .table-row.row-both:hover { background: #ffe4e0; }
 
-    .flag-cell { padding-top: 2px; font-size: 13px; color: var(--red); font-weight: 500; }
+    .flag-cell { display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
+    .flag-tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; font-family: var(--mono); display: inline-block; width: fit-content; }
+    .flag-tag-team { background: #fee2e2; color: #991b1b; }
+    .flag-tag-level { background: #fef3c7; color: #78350f; }
+
     .username { font-family: var(--mono); font-size: 13px; font-weight: 500; word-break: break-all; padding-top: 3px; }
-    .username.flagged-name { color: var(--red); }
+    .username.name-team { color: var(--red); }
+    .username.name-level { color: var(--amber); }
+    .username.name-both { color: var(--red); }
+
     .codes-cell { display: flex; flex-wrap: wrap; gap: 4px; }
     .count-cell { font-family: var(--mono); font-size: 13px; color: var(--text-muted); padding-top: 4px; }
 
@@ -121,17 +149,22 @@
     .bc5 { background: #e0f2fe; color: #0c4a6e; }
     .bc6 { background: #f0fdf4; color: #14532d; }
     .bc7 { background: #fef9c3; color: #713f12; }
-    .badge.badge-conflict { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .badge-team { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .badge-level { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .badge-both { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-    .conflict-note { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 5px; }
+    .conflict-note { font-size: 11px; font-family: var(--mono); margin-top: 5px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .conflict-note.note-team { color: var(--red); }
+    .conflict-note.note-level { color: var(--amber); }
+    .conflict-note.note-both { color: var(--red); }
+
     .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
-
     footer { text-align: center; padding: 32px; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
 
-    @media (max-width: 640px) {
+    @media (max-width: 660px) {
       main { padding: 24px 16px; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .table-head, .table-row { grid-template-columns: 22px 1fr 1fr; }
+      .table-head, .table-row { grid-template-columns: 50px 1fr 1fr; }
       .table-head span:last-child, .table-row .count-cell { display: none; }
       .config-hint { display: none; }
       header { padding: 14px 16px; }
@@ -145,7 +178,7 @@
     <svg viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
   </div>
   <h1>Billing Code Report</h1>
-  <span class="version">v2.0</span>
+  <span class="version">v3.0</span>
 </header>
 
 <main>
@@ -182,23 +215,32 @@
     <div class="stats-grid">
       <div class="stat-card"><div class="val" id="s-rows">0</div><div class="lbl">Total rows</div></div>
       <div class="stat-card"><div class="val" id="s-users">0</div><div class="lbl">Unique users</div></div>
-      <div class="stat-card"><div class="val" id="s-codes">0</div><div class="lbl">Unique G-codes</div></div>
-      <div class="stat-card stat-flagged"><div class="val" id="s-flagged">0</div><div class="lbl">Flagged users</div></div>
+      <div class="stat-card"><div class="val" id="s-codes">0</div><div class="lbl">Unique codes</div></div>
+      <div class="stat-card stat-red"><div class="val" id="s-team">0</div><div class="lbl">Team conflicts</div></div>
+      <div class="stat-card stat-amber"><div class="val" id="s-level">0</div><div class="lbl">Level conflicts</div></div>
     </div>
 
-    <div id="flagged-banner" style="display:none;">
-      <h3>&#9873; Users with codes from multiple teams</h3>
-      <div class="flagged-pills" id="flagged-pills"></div>
+    <!-- Team conflict banner -->
+    <div id="banner-team" class="banner banner-red" style="display:none;">
+      <h3>&#9873; Team conflicts — codes from different teams</h3>
+      <div class="flagged-pills" id="pills-team"></div>
+    </div>
+
+    <!-- Level conflict banner -->
+    <div id="banner-level" class="banner banner-amber" style="display:none;">
+      <h3>&#9888; Level conflicts — codes from different levels (same team)</h3>
+      <div class="flagged-pills" id="pills-level"></div>
     </div>
 
     <div class="search-row">
       <input type="text" id="search-input" placeholder="Search by username or G-code…" oninput="applyFilters()" />
-      <button class="filter-toggle" id="flag-filter-btn" onclick="toggleFlagFilter()">Show flagged only</button>
+      <button class="filter-btn filter-btn-red" id="btn-filter-team" onclick="toggleFilter('team')">Team conflicts only</button>
+      <button class="filter-btn filter-btn-amber" id="btn-filter-level" onclick="toggleFilter('level')">Level conflicts only</button>
     </div>
 
     <div class="table-wrap">
       <div class="table-head">
-        <span></span>
+        <span>Flag</span>
         <span>Username</span>
         <span>G-codes used</span>
         <span>Count</span>
@@ -215,23 +257,44 @@
   let allRows = [];
   let teamColorMap = {};
   let colorIdx = 0;
-  let showFlaggedOnly = false;
+  let activeFilter = null; // 'team', 'level', or null
   const NUM_COLORS = 8;
 
+  // --- Code parsing ---
+  // Extract team prefix: letters at the start (e.g. 'en', 'it', 'es')
   function getTeam(code) {
     const m = code.match(/^([a-zA-Z]+)/);
-    return m ? m[1].toLowerCase() : code.toLowerCase();
+    return m ? m[1].toLowerCase() : '';
   }
 
-  function isFlagged(codes) {
-    return new Set([...codes].map(getTeam)).size > 1;
+  // Extract level: last numeric segment in the code
+  // e.g. en-1 -> 1, en-1-s -> 1, es-419-1 -> 1, es-419-2-s -> 2
+  function getLevel(code) {
+    // Find all numeric segments
+    const parts = code.split('-');
+    // Level is the last purely numeric segment
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (/^\d+$/.test(parts[i]) && parts[i].length <= 2) {
+        return parts[i];
+      }
+    }
+    return null;
   }
 
-  function getTeams(codes) {
-    return [...new Set([...codes].map(getTeam))].sort();
+  // Determine flag type for a user's set of codes
+  // Returns: 'both', 'team', 'level', or null
+  function getFlagType(codes) {
+    const teams = new Set([...codes].map(getTeam));
+    const levels = new Set([...codes].map(getLevel).filter(Boolean));
+    const hasTeamConflict = teams.size > 1;
+    const hasLevelConflict = levels.size > 1;
+    if (hasTeamConflict && hasLevelConflict) return 'both';
+    if (hasTeamConflict) return 'team';
+    if (hasLevelConflict) return 'level';
+    return null;
   }
 
-  function getColor(code) {
+  function getTeamColor(code) {
     const team = getTeam(code);
     if (!(team in teamColorMap)) {
       teamColorMap[team] = colorIdx % NUM_COLORS;
@@ -255,8 +318,9 @@
   }
 
   function processFile(text, filename) {
-    teamColorMap = {}; colorIdx = 0; showFlaggedOnly = false;
-    document.getElementById('flag-filter-btn').classList.remove('active');
+    teamColorMap = {}; colorIdx = 0; activeFilter = null;
+    document.getElementById('btn-filter-team').classList.remove('active');
+    document.getElementById('btn-filter-level').classList.remove('active');
 
     const userCol = parseInt(document.getElementById('col-user').value) - 1;
     const codeCol = parseInt(document.getElementById('col-code').value) - 1;
@@ -274,15 +338,17 @@
       allCodes.add(code);
     });
 
-    // Sort: flagged first, then alphabetical
+    // Sort: both-flagged first, team-flagged, level-flagged, then clean, all alphabetical within groups
+    const order = { 'both': 0, 'team': 1, 'level': 2, 'null': 3 };
     allRows = Object.entries(map).sort((a, b) => {
-      const af = isFlagged(a[1]), bf = isFlagged(b[1]);
-      if (af && !bf) return -1;
-      if (!af && bf) return 1;
+      const af = getFlagType(a[1]) || 'null';
+      const bf = getFlagType(b[1]) || 'null';
+      if (order[af] !== order[bf]) return order[af] - order[bf];
       return a[0].localeCompare(b[0]);
     });
 
-    const flaggedUsers = allRows.filter(([, c]) => isFlagged(c));
+    const teamConflicts = allRows.filter(([, c]) => ['team','both'].includes(getFlagType(c)));
+    const levelConflicts = allRows.filter(([, c]) => ['level','both'].includes(getFlagType(c)));
 
     document.getElementById('report-title').textContent = filename.replace(/\.csv$/i, '');
     document.getElementById('report-meta').textContent =
@@ -290,16 +356,27 @@
     document.getElementById('s-rows').textContent = data.length.toLocaleString();
     document.getElementById('s-users').textContent = allRows.length.toLocaleString();
     document.getElementById('s-codes').textContent = allCodes.size.toLocaleString();
-    document.getElementById('s-flagged').textContent = flaggedUsers.length.toLocaleString();
+    document.getElementById('s-team').textContent = teamConflicts.length.toLocaleString();
+    document.getElementById('s-level').textContent = levelConflicts.length.toLocaleString();
 
-    const banner = document.getElementById('flagged-banner');
-    if (flaggedUsers.length > 0) {
-      document.getElementById('flagged-pills').innerHTML = flaggedUsers.map(([u]) =>
-        `<span class="flagged-pill" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
+    // Team banner
+    if (teamConflicts.length > 0) {
+      document.getElementById('pills-team').innerHTML = teamConflicts.map(([u]) =>
+        `<span class="pill pill-red" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
       ).join('');
-      banner.style.display = 'block';
+      document.getElementById('banner-team').style.display = 'block';
     } else {
-      banner.style.display = 'none';
+      document.getElementById('banner-team').style.display = 'none';
+    }
+
+    // Level banner
+    if (levelConflicts.length > 0) {
+      document.getElementById('pills-level').innerHTML = levelConflicts.map(([u]) =>
+        `<span class="pill pill-amber" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
+      ).join('');
+      document.getElementById('banner-level').style.display = 'block';
+    } else {
+      document.getElementById('banner-level').style.display = 'none';
     }
 
     renderTable(allRows);
@@ -315,18 +392,44 @@
       return;
     }
     body.innerHTML = rows.map(([user, codes]) => {
-      const flagged = isFlagged(codes);
+      const flagType = getFlagType(codes);
       const sorted = [...codes].sort();
+      const teams = [...new Set(sorted.map(getTeam))].sort();
+      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort();
+
+      // Row class
+      const rowClass = flagType ? `row-${flagType}` : '';
+
+      // Flag tags
+      let flagCell = '';
+      if (flagType === 'team' || flagType === 'both') flagCell += `<span class="flag-tag flag-tag-team">TEAM</span>`;
+      if (flagType === 'level' || flagType === 'both') flagCell += `<span class="flag-tag flag-tag-level">LEVEL</span>`;
+
+      // Username class
+      const nameClass = flagType ? `name-${flagType}` : '';
+
+      // Badge style
+      const badgeClass = flagType === 'team' ? 'badge-team'
+                       : flagType === 'level' ? 'badge-level'
+                       : flagType === 'both' ? 'badge-both'
+                       : '';
       const badges = sorted.map(c =>
-        `<span class="badge ${flagged ? 'badge-conflict' : getColor(c)}">${escHtml(c)}</span>`
+        `<span class="badge ${badgeClass || getTeamColor(c)}">${escHtml(c)}</span>`
       ).join('');
-      const conflictNote = flagged
-        ? `<div class="conflict-note">&#9873; Conflict: teams [${getTeams(codes).map(escHtml).join(', ')}]</div>`
-        : '';
-      return `<div class="table-row ${flagged ? 'is-flagged' : ''}" data-user="${escAttr(user)}">
-        <div class="flag-cell">${flagged ? '&#9873;' : ''}</div>
-        <div class="username ${flagged ? 'flagged-name' : ''}">${escHtml(user)}</div>
-        <div><div class="codes-cell">${badges}</div>${conflictNote}</div>
+
+      // Conflict note
+      let note = '';
+      if (flagType === 'team' || flagType === 'both') {
+        note += `<div class="conflict-note note-team">&#9873; Teams: ${teams.map(escHtml).join(', ')}</div>`;
+      }
+      if (flagType === 'level' || flagType === 'both') {
+        note += `<div class="conflict-note note-level">&#9888; Levels: ${levels.map(escHtml).join(', ')}</div>`;
+      }
+
+      return `<div class="table-row ${rowClass}" data-user="${escAttr(user)}">
+        <div class="flag-cell">${flagCell}</div>
+        <div class="username ${nameClass}">${escHtml(user)}</div>
+        <div><div class="codes-cell">${badges}</div>${note}</div>
         <div class="count-cell">${codes.size}</div>
       </div>`;
     }).join('');
@@ -335,23 +438,26 @@
   function applyFilters() {
     const q = document.getElementById('search-input').value.toLowerCase();
     let filtered = allRows;
-    if (showFlaggedOnly) filtered = filtered.filter(([, c]) => isFlagged(c));
+    if (activeFilter === 'team') filtered = filtered.filter(([, c]) => ['team','both'].includes(getFlagType(c)));
+    else if (activeFilter === 'level') filtered = filtered.filter(([, c]) => ['level','both'].includes(getFlagType(c)));
     if (q) filtered = filtered.filter(([u, c]) =>
       u.toLowerCase().includes(q) || [...c].some(x => x.toLowerCase().includes(q))
     );
     renderTable(filtered);
   }
 
-  function toggleFlagFilter() {
-    showFlaggedOnly = !showFlaggedOnly;
-    document.getElementById('flag-filter-btn').classList.toggle('active', showFlaggedOnly);
+  function toggleFilter(type) {
+    activeFilter = activeFilter === type ? null : type;
+    document.getElementById('btn-filter-team').classList.toggle('active', activeFilter === 'team');
+    document.getElementById('btn-filter-level').classList.toggle('active', activeFilter === 'level');
     applyFilters();
   }
 
   function jumpToUser(user) {
     document.getElementById('search-input').value = user;
-    showFlaggedOnly = false;
-    document.getElementById('flag-filter-btn').classList.remove('active');
+    activeFilter = null;
+    document.getElementById('btn-filter-team').classList.remove('active');
+    document.getElementById('btn-filter-level').classList.remove('active');
     applyFilters();
     setTimeout(() => {
       const el = document.querySelector(`[data-user="${CSS.escape(user)}"]`);
@@ -360,20 +466,27 @@
   }
 
   function exportAll() {
-    const lines = ['Username,G-codes,Teams,Count,Flagged'];
+    const lines = ['Username,G-codes,Teams,Levels,Count,Team conflict,Level conflict'];
     allRows.forEach(([u, c]) => {
       const sorted = [...c].sort();
-      lines.push(`"${u}","${sorted.join('; ')}","${getTeams(c).join('; ')}",${c.size},"${isFlagged(c) ? 'YES' : ''}"`);
+      const teams = [...new Set(sorted.map(getTeam))].sort().join('; ');
+      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort().join('; ');
+      const ft = getFlagType(c);
+      lines.push(`"${u}","${sorted.join('; ')}","${teams}","${levels}",${c.size},"${['team','both'].includes(ft)?'YES':''}","${['level','both'].includes(ft)?'YES':''}"`);
     });
     dlCSV(lines.join('\n'), 'billing_report.csv');
   }
 
   function exportFlagged() {
-    const flagged = allRows.filter(([, c]) => isFlagged(c));
+    const flagged = allRows.filter(([, c]) => getFlagType(c) !== null);
     if (!flagged.length) { alert('No flagged users found.'); return; }
-    const lines = ['Username,G-codes,Conflicting teams,Count'];
+    const lines = ['Username,G-codes,Teams,Levels,Count,Team conflict,Level conflict'];
     flagged.forEach(([u, c]) => {
-      lines.push(`"${u}","${[...c].sort().join('; ')}","${getTeams(c).join('; ')}",${c.size}`);
+      const sorted = [...c].sort();
+      const teams = [...new Set(sorted.map(getTeam))].sort().join('; ');
+      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort().join('; ');
+      const ft = getFlagType(c);
+      lines.push(`"${u}","${sorted.join('; ')}","${teams}","${levels}",${c.size},"${['team','both'].includes(ft)?'YES':''}","${['level','both'].includes(ft)?'YES':''}"`);
     });
     dlCSV(lines.join('\n'), 'flagged_users.csv');
   }
