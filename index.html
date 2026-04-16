@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billing Code Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --surface2: #f0efe9;
+      --border: rgba(0,0,0,0.10);
+      --border-strong: rgba(0,0,0,0.18);
+      --text: #1a1916;
+      --text-muted: #7a7870;
+      --accent: #2a5cff;
+      --accent-bg: #eef2ff;
+      --red: #c0392b;
+      --red-bg: #fff0ee;
+      --red-border: #f5c4bc;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 18px 32px; display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .logo { width: 32px; height: 32px; background: var(--text); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo svg { width: 18px; height: 18px; fill: var(--bg); }
+    header h1 { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
+    header .version { font-family: var(--mono); font-size: 11px; color: var(--text-muted); background: var(--surface2); padding: 2px 8px; border-radius: 4px; margin-left: auto; }
+
+    main { max-width: 980px; margin: 0 auto; padding: 40px 24px; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    #uploader-section { animation: fadeUp 0.4s ease both; }
+    .upload-label {
+      display: block; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-lg);
+      background: var(--surface); padding: 56px 32px; text-align: center; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .upload-label:hover, .upload-label.over { border-color: var(--accent); background: var(--accent-bg); }
+    .upload-label input { display: none; }
+    .upload-icon { width: 52px; height: 52px; background: var(--surface2); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .upload-icon svg { width: 24px; height: 24px; stroke: var(--text-muted); fill: none; stroke-width: 1.8; }
+    .upload-label h2 { font-size: 17px; font-weight: 500; margin-bottom: 6px; }
+    .upload-label p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    .config-row { display: flex; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; margin-top: 12px; flex-wrap: wrap; }
+    .config-row label { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .config-row input[type=number] { width: 56px; font-family: var(--mono); font-size: 13px; border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px 8px; background: var(--surface2); color: var(--text); }
+    .config-hint { font-size: 12px; color: var(--text-muted); margin-left: auto; font-family: var(--mono); }
+
+    #report-section { display: none; animation: fadeUp 0.35s ease both; }
+
+    .report-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+    .report-header h2 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+    .report-header p { font-size: 13px; color: var(--text-muted); margin-top: 3px; font-family: var(--mono); }
+
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); transition: background 0.12s, transform 0.1s; }
+    .btn:hover { background: var(--surface2); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn-primary:hover { background: #333; }
+    .btn-danger { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+    .btn-danger:hover { background: #ffe4e0; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+    .stat-card.stat-flagged { background: var(--red-bg); border-color: var(--red-border); }
+    .stat-card .val { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; font-family: var(--mono); }
+    .stat-card.stat-flagged .val { color: var(--red); }
+    .stat-card .lbl { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-card.stat-flagged .lbl { color: #d4796a; }
+
+    #flagged-banner { background: var(--red-bg); border: 1px solid var(--red-border); border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 20px; }
+    #flagged-banner h3 { font-size: 14px; font-weight: 500; color: var(--red); display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .flagged-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .flagged-pill { font-family: var(--mono); font-size: 12px; background: white; border: 1px solid var(--red-border); color: var(--red); border-radius: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.1s; }
+    .flagged-pill:hover { background: #ffe4e0; }
+
+    .search-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+    #search-input { flex: 1; font-family: var(--sans); font-size: 14px; padding: 11px 16px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
+    #search-input:focus { border-color: var(--accent); }
+    #search-input::placeholder { color: var(--text-muted); }
+    .filter-toggle { font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 10px 16px; border-radius: var(--radius); cursor: pointer; border: 1px solid var(--red-border); background: var(--red-bg); color: var(--red); transition: background 0.12s; white-space: nowrap; }
+    .filter-toggle.active { background: var(--red); color: white; border-color: var(--red); }
+
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .table-head { display: grid; grid-template-columns: 28px 220px 1fr 70px; gap: 12px; padding: 10px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    .table-head span { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+
+    .table-row { display: grid; grid-template-columns: 28px 220px 1fr 70px; gap: 12px; padding: 12px 20px; align-items: start; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: var(--surface2); }
+    .table-row.is-flagged { background: var(--red-bg); }
+    .table-row.is-flagged:hover { background: #ffe4e0; }
+
+    .flag-cell { padding-top: 2px; font-size: 13px; color: var(--red); font-weight: 500; }
+    .username { font-family: var(--mono); font-size: 13px; font-weight: 500; word-break: break-all; padding-top: 3px; }
+    .username.flagged-name { color: var(--red); }
+    .codes-cell { display: flex; flex-wrap: wrap; gap: 4px; }
+    .count-cell { font-family: var(--mono); font-size: 13px; color: var(--text-muted); padding-top: 4px; }
+
+    .badge { font-family: var(--mono); font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 999px; }
+    .bc0 { background: #dbeafe; color: #1e3a8a; }
+    .bc1 { background: #d1fae5; color: #064e3b; }
+    .bc2 { background: #ede9fe; color: #3730a3; }
+    .bc3 { background: #fef3c7; color: #78350f; }
+    .bc4 { background: #fce7f3; color: #831843; }
+    .bc5 { background: #e0f2fe; color: #0c4a6e; }
+    .bc6 { background: #f0fdf4; color: #14532d; }
+    .bc7 { background: #fef9c3; color: #713f12; }
+    .badge.badge-conflict { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    .conflict-note { font-size: 11px; color: var(--red); font-family: var(--mono); margin-top: 5px; }
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
+
+    footer { text-align: center; padding: 32px; font-size: 12px; color: var(--text-muted); font-family: var(--mono); }
+
+    @media (max-width: 640px) {
+      main { padding: 24px 16px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .table-head, .table-row { grid-template-columns: 22px 1fr 1fr; }
+      .table-head span:last-child, .table-row .count-cell { display: none; }
+      .config-hint { display: none; }
+      header { padding: 14px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
+  </div>
+  <h1>Billing Code Report</h1>
+  <span class="version">v2.0</span>
+</header>
+
+<main>
+
+  <section id="uploader-section">
+    <label class="upload-label" id="drop-zone">
+      <input type="file" id="file-input" accept=".csv" />
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <h2>Drop your CSV file here</h2>
+      <p>or click to browse your files<br/>Username in column F &nbsp;·&nbsp; G-code in column T</p>
+    </label>
+    <div class="config-row">
+      <label>Username column <input type="number" id="col-user" value="6" min="1" max="100" /></label>
+      <label>G-code column <input type="number" id="col-code" value="20" min="1" max="100" /></label>
+      <span class="config-hint">F = 6 &nbsp;&nbsp; T = 20</span>
+    </div>
+  </section>
+
+  <section id="report-section">
+    <div class="report-header">
+      <div>
+        <h2 id="report-title">Report</h2>
+        <p id="report-meta"></p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-danger" onclick="exportFlagged()">Export flagged</button>
+        <button class="btn btn-primary" onclick="exportAll()">Export all</button>
+        <button class="btn" onclick="resetApp()">New file</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="val" id="s-rows">0</div><div class="lbl">Total rows</div></div>
+      <div class="stat-card"><div class="val" id="s-users">0</div><div class="lbl">Unique users</div></div>
+      <div class="stat-card"><div class="val" id="s-codes">0</div><div class="lbl">Unique G-codes</div></div>
+      <div class="stat-card stat-flagged"><div class="val" id="s-flagged">0</div><div class="lbl">Flagged users</div></div>
+    </div>
+
+    <div id="flagged-banner" style="display:none;">
+      <h3>&#9873; Users with codes from multiple teams</h3>
+      <div class="flagged-pills" id="flagged-pills"></div>
+    </div>
+
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Search by username or G-code…" oninput="applyFilters()" />
+      <button class="filter-toggle" id="flag-filter-btn" onclick="toggleFlagFilter()">Show flagged only</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span></span>
+        <span>Username</span>
+        <span>G-codes used</span>
+        <span>Count</span>
+      </div>
+      <div id="table-body"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>All processing happens in your browser — no data is sent anywhere.</footer>
+
+<script>
+  let allRows = [];
+  let teamColorMap = {};
+  let colorIdx = 0;
+  let showFlaggedOnly = false;
+  const NUM_COLORS = 8;
+
+  function getTeam(code) {
+    const m = code.match(/^([a-zA-Z]+)/);
+    return m ? m[1].toLowerCase() : code.toLowerCase();
+  }
+
+  function isFlagged(codes) {
+    return new Set([...codes].map(getTeam)).size > 1;
+  }
+
+  function getTeams(codes) {
+    return [...new Set([...codes].map(getTeam))].sort();
+  }
+
+  function getColor(code) {
+    const team = getTeam(code);
+    if (!(team in teamColorMap)) {
+      teamColorMap[team] = colorIdx % NUM_COLORS;
+      colorIdx++;
+    }
+    return 'bc' + teamColorMap[team];
+  }
+
+  function parseCSV(text) {
+    return text.split(/\r?\n/).filter(l => l.trim()).map(line => {
+      const cells = []; let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+        else cur += c;
+      }
+      cells.push(cur.trim());
+      return cells;
+    });
+  }
+
+  function processFile(text, filename) {
+    teamColorMap = {}; colorIdx = 0; showFlaggedOnly = false;
+    document.getElementById('flag-filter-btn').classList.remove('active');
+
+    const userCol = parseInt(document.getElementById('col-user').value) - 1;
+    const codeCol = parseInt(document.getElementById('col-code').value) - 1;
+    const rows = parseCSV(text);
+    const data = rows.slice(1);
+    const map = {};
+    const allCodes = new Set();
+
+    data.forEach(row => {
+      const user = (row[userCol] || '').trim();
+      const code = (row[codeCol] || '').trim();
+      if (!user || !code) return;
+      if (!map[user]) map[user] = new Set();
+      map[user].add(code);
+      allCodes.add(code);
+    });
+
+    // Sort: flagged first, then alphabetical
+    allRows = Object.entries(map).sort((a, b) => {
+      const af = isFlagged(a[1]), bf = isFlagged(b[1]);
+      if (af && !bf) return -1;
+      if (!af && bf) return 1;
+      return a[0].localeCompare(b[0]);
+    });
+
+    const flaggedUsers = allRows.filter(([, c]) => isFlagged(c));
+
+    document.getElementById('report-title').textContent = filename.replace(/\.csv$/i, '');
+    document.getElementById('report-meta').textContent =
+      'Processed ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    document.getElementById('s-rows').textContent = data.length.toLocaleString();
+    document.getElementById('s-users').textContent = allRows.length.toLocaleString();
+    document.getElementById('s-codes').textContent = allCodes.size.toLocaleString();
+    document.getElementById('s-flagged').textContent = flaggedUsers.length.toLocaleString();
+
+    const banner = document.getElementById('flagged-banner');
+    if (flaggedUsers.length > 0) {
+      document.getElementById('flagged-pills').innerHTML = flaggedUsers.map(([u]) =>
+        `<span class="flagged-pill" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
+      ).join('');
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+
+    renderTable(allRows);
+    document.getElementById('uploader-section').style.display = 'none';
+    document.getElementById('report-section').style.display = 'block';
+    document.getElementById('search-input').value = '';
+  }
+
+  function renderTable(rows) {
+    const body = document.getElementById('table-body');
+    if (!rows.length) {
+      body.innerHTML = '<div class="empty-state">No matching results found.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(([user, codes]) => {
+      const flagged = isFlagged(codes);
+      const sorted = [...codes].sort();
+      const badges = sorted.map(c =>
+        `<span class="badge ${flagged ? 'badge-conflict' : getColor(c)}">${escHtml(c)}</span>`
+      ).join('');
+      const conflictNote = flagged
+        ? `<div class="conflict-note">&#9873; Conflict: teams [${getTeams(codes).map(escHtml).join(', ')}]</div>`
+        : '';
+      return `<div class="table-row ${flagged ? 'is-flagged' : ''}" data-user="${escAttr(user)}">
+        <div class="flag-cell">${flagged ? '&#9873;' : ''}</div>
+        <div class="username ${flagged ? 'flagged-name' : ''}">${escHtml(user)}</div>
+        <div><div class="codes-cell">${badges}</div>${conflictNote}</div>
+        <div class="count-cell">${codes.size}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    let filtered = allRows;
+    if (showFlaggedOnly) filtered = filtered.filter(([, c]) => isFlagged(c));
+    if (q) filtered = filtered.filter(([u, c]) =>
+      u.toLowerCase().includes(q) || [...c].some(x => x.toLowerCase().includes(q))
+    );
+    renderTable(filtered);
+  }
+
+  function toggleFlagFilter() {
+    showFlaggedOnly = !showFlaggedOnly;
+    document.getElementById('flag-filter-btn').classList.toggle('active', showFlaggedOnly);
+    applyFilters();
+  }
+
+  function jumpToUser(user) {
+    document.getElementById('search-input').value = user;
+    showFlaggedOnly = false;
+    document.getElementById('flag-filter-btn').classList.remove('active');
+    applyFilters();
+    setTimeout(() => {
+      const el = document.querySelector(`[data-user="${CSS.escape(user)}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 60);
+  }
+
+  function exportAll() {
+    const lines = ['Username,G-codes,Teams,Count,Flagged'];
+    allRows.forEach(([u, c]) => {
+      const sorted = [...c].sort();
+      lines.push(`"${u}","${sorted.join('; ')}","${getTeams(c).join('; ')}",${c.size},"${isFlagged(c) ? 'YES' : ''}"`);
+    });
+    dlCSV(lines.join('\n'), 'billing_report.csv');
+  }
+
+  function exportFlagged() {
+    const flagged = allRows.filter(([, c]) => isFlagged(c));
+    if (!flagged.length) { alert('No flagged users found.'); return; }
+    const lines = ['Username,G-codes,Conflicting teams,Count'];
+    flagged.forEach(([u, c]) => {
+      lines.push(`"${u}","${[...c].sort().join('; ')}","${getTeams(c).join('; ')}",${c.size}`);
+    });
+    dlCSV(lines.join('\n'), 'flagged_users.csv');
+  }
+
+  function dlCSV(content, filename) {
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([content], { type: 'text/csv' })),
+      download: filename
+    });
+    a.click();
+  }
+
+  function resetApp() {
+    document.getElementById('report-section').style.display = 'none';
+    document.getElementById('uploader-section').style.display = 'block';
+    document.getElementById('file-input').value = '';
+    allRows = [];
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escAttr(s) {
+    return String(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  document.getElementById('file-input').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) { const r = new FileReader(); r.onload = ev => processFile(ev.target.result, f.name); r.readAsText(f); }
+  });
+
+  const dz = document.getElementById('drop-zone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.name.endsWith('.csv')) { const r = new FileReader(); r.onload = ev => processFile(ev.target.result, f.name); r.readAsText(f); }
+  });
+</script>
+</body>
+</html>
