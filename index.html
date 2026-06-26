@@ -89,7 +89,6 @@
     .stat-card.stat-red .lbl { color: #d4796a; }
     .stat-card.stat-amber .lbl { color: #b45309; }
 
-    /* Banners */
     .banner { border-radius: var(--radius-lg); padding: 18px 22px; margin-bottom: 16px; }
     .banner-red { background: var(--red-bg); border: 1px solid var(--red-border); }
     .banner-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); }
@@ -124,7 +123,7 @@
     .table-row.row-team:hover { background: #ffe4e0; }
     .table-row.row-level { background: var(--amber-bg); }
     .table-row.row-level:hover { background: #fef3c7; }
-    .table-row.row-both { background: #fff0f0; border-left: 3px solid var(--red); }
+    .table-row.row-both { background: var(--red-bg); border-left: 3px solid var(--red); }
     .table-row.row-both:hover { background: #ffe4e0; }
 
     .flag-cell { display: flex; flex-direction: column; gap: 3px; padding-top: 2px; }
@@ -153,7 +152,7 @@
     .badge-level { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
     .badge-both { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-    .conflict-note { font-size: 11px; font-family: var(--mono); margin-top: 5px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .conflict-note { font-size: 11px; font-family: var(--mono); margin-top: 5px; }
     .conflict-note.note-team { color: var(--red); }
     .conflict-note.note-level { color: var(--amber); }
     .conflict-note.note-both { color: var(--red); }
@@ -178,7 +177,7 @@
     <svg viewBox="0 0 18 18"><rect x="2" y="2" width="6" height="6" rx="1"/><rect x="10" y="2" width="6" height="6" rx="1"/><rect x="2" y="10" width="6" height="6" rx="1"/><rect x="10" y="10" width="6" height="6" rx="1"/></svg>
   </div>
   <h1>Billing Code Report</h1>
-  <span class="version">v3.0</span>
+  <span class="version">v3.1</span>
 </header>
 
 <main>
@@ -220,13 +219,11 @@
       <div class="stat-card stat-amber"><div class="val" id="s-level">0</div><div class="lbl">Level conflicts</div></div>
     </div>
 
-    <!-- Team conflict banner -->
     <div id="banner-team" class="banner banner-red" style="display:none;">
       <h3>&#9873; Team conflicts — codes from different teams</h3>
       <div class="flagged-pills" id="pills-team"></div>
     </div>
 
-    <!-- Level conflict banner -->
     <div id="banner-level" class="banner banner-amber" style="display:none;">
       <h3>&#9888; Level conflicts — codes from different levels (same team)</h3>
       <div class="flagged-pills" id="pills-level"></div>
@@ -257,45 +254,63 @@
   let allRows = [];
   let teamColorMap = {};
   let colorIdx = 0;
-  let activeFilter = null; // 'team', 'level', or null
+  let activeFilter = null;
   const NUM_COLORS = 8;
 
-  // --- Code parsing ---
-  // Extract team prefix: letters at the start (e.g. 'en', 'it', 'es')
-  function getTeam(code) {
-    const m = code.match(/^([a-zA-Z]+)/);
-    return m ? m[1].toLowerCase() : '';
-  }
+  /**
+   * Parse a G-code into { team, level }
+   *
+   * Rules:
+   *   - Split by '-'
+   *   - The LEVEL is the last segment that is a short number (1-2 digits: 1,2,3...)
+   *     BUT only if it doesn't look like a locale code (419 is 3 digits → locale, not level)
+   *   - The TEAM is everything EXCEPT the level segment and any trailing letter-only suffix (like 's')
+   *
+   * Examples:
+   *   en-1      → team=en,     level=1
+   *   en-2-s    → team=en,     level=2   (s is suffix, ignored)
+   *   en11-1    → team=en11,   level=1
+   *   en11-2-s  → team=en11,   level=2
+   *   es-419-1  → team=es-419, level=1
+   *   es-419-2-s→ team=es-419, level=2
+   *   ko-1      → team=ko,     level=1
+   *   ko-2      → team=ko,     level=2
+   */
+  function parseCode(code) {
+    const parts = code.toLowerCase().split('-');
 
-  // Extract level: last numeric segment in the code
-  // e.g. en-1 -> 1, en-1-s -> 1, es-419-1 -> 1, es-419-2-s -> 2
-  function getLevel(code) {
-    // Find all numeric segments
-    const parts = code.split('-');
-    // Level is the last purely numeric segment
-    for (let i = parts.length - 1; i >= 0; i--) {
-      if (/^\d+$/.test(parts[i]) && parts[i].length <= 2) {
-        return parts[i];
-      }
+    // Work from the right side:
+    // Skip trailing letter-only suffixes (e.g. 's', 'p')
+    let i = parts.length - 1;
+    while (i >= 0 && /^[a-z]+$/.test(parts[i])) i--;
+
+    // The level is the current rightmost segment if it's 1-2 digit number
+    let level = null;
+    if (i >= 0 && /^\d{1,2}$/.test(parts[i])) {
+      level = parts[i];
+      i--;
     }
-    return null;
+
+    // Everything remaining (parts[0..i]) is the team
+    const team = parts.slice(0, i + 1).join('-');
+
+    return { team, level };
   }
 
-  // Determine flag type for a user's set of codes
-  // Returns: 'both', 'team', 'level', or null
   function getFlagType(codes) {
-    const teams = new Set([...codes].map(getTeam));
-    const levels = new Set([...codes].map(getLevel).filter(Boolean));
-    const hasTeamConflict = teams.size > 1;
-    const hasLevelConflict = levels.size > 1;
-    if (hasTeamConflict && hasLevelConflict) return 'both';
-    if (hasTeamConflict) return 'team';
-    if (hasLevelConflict) return 'level';
+    const parsed = [...codes].map(parseCode);
+    const teams = new Set(parsed.map(p => p.team));
+    const levels = new Set(parsed.map(p => p.level).filter(Boolean));
+    const teamConflict = teams.size > 1;
+    const levelConflict = levels.size > 1;
+    if (teamConflict && levelConflict) return 'both';
+    if (teamConflict) return 'team';
+    if (levelConflict) return 'level';
     return null;
   }
 
   function getTeamColor(code) {
-    const team = getTeam(code);
+    const { team } = parseCode(code);
     if (!(team in teamColorMap)) {
       teamColorMap[team] = colorIdx % NUM_COLORS;
       colorIdx++;
@@ -338,7 +353,6 @@
       allCodes.add(code);
     });
 
-    // Sort: both-flagged first, team-flagged, level-flagged, then clean, all alphabetical within groups
     const order = { 'both': 0, 'team': 1, 'level': 2, 'null': 3 };
     allRows = Object.entries(map).sort((a, b) => {
       const af = getFlagType(a[1]) || 'null';
@@ -359,7 +373,6 @@
     document.getElementById('s-team').textContent = teamConflicts.length.toLocaleString();
     document.getElementById('s-level').textContent = levelConflicts.length.toLocaleString();
 
-    // Team banner
     if (teamConflicts.length > 0) {
       document.getElementById('pills-team').innerHTML = teamConflicts.map(([u]) =>
         `<span class="pill pill-red" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
@@ -369,7 +382,6 @@
       document.getElementById('banner-team').style.display = 'none';
     }
 
-    // Level banner
     if (levelConflicts.length > 0) {
       document.getElementById('pills-level').innerHTML = levelConflicts.map(([u]) =>
         `<span class="pill pill-amber" onclick="jumpToUser(this.dataset.user)" data-user="${escAttr(u)}">${escHtml(u)}</span>`
@@ -394,37 +406,30 @@
     body.innerHTML = rows.map(([user, codes]) => {
       const flagType = getFlagType(codes);
       const sorted = [...codes].sort();
-      const teams = [...new Set(sorted.map(getTeam))].sort();
-      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort();
+      const parsed = sorted.map(parseCode);
+      const teams = [...new Set(parsed.map(p => p.team))].sort();
+      const levels = [...new Set(parsed.map(p => p.level).filter(Boolean))].sort();
 
-      // Row class
       const rowClass = flagType ? `row-${flagType}` : '';
 
-      // Flag tags
       let flagCell = '';
       if (flagType === 'team' || flagType === 'both') flagCell += `<span class="flag-tag flag-tag-team">TEAM</span>`;
       if (flagType === 'level' || flagType === 'both') flagCell += `<span class="flag-tag flag-tag-level">LEVEL</span>`;
 
-      // Username class
       const nameClass = flagType ? `name-${flagType}` : '';
 
-      // Badge style
       const badgeClass = flagType === 'team' ? 'badge-team'
                        : flagType === 'level' ? 'badge-level'
-                       : flagType === 'both' ? 'badge-both'
-                       : '';
+                       : flagType === 'both' ? 'badge-both' : '';
       const badges = sorted.map(c =>
         `<span class="badge ${badgeClass || getTeamColor(c)}">${escHtml(c)}</span>`
       ).join('');
 
-      // Conflict note
       let note = '';
-      if (flagType === 'team' || flagType === 'both') {
-        note += `<div class="conflict-note note-team">&#9873; Teams: ${teams.map(escHtml).join(', ')}</div>`;
-      }
-      if (flagType === 'level' || flagType === 'both') {
-        note += `<div class="conflict-note note-level">&#9888; Levels: ${levels.map(escHtml).join(', ')}</div>`;
-      }
+      if (flagType === 'team' || flagType === 'both')
+        note += `<div class="conflict-note note-team">&#9873; Teams: ${teams.map(escHtml).join(' vs ')}</div>`;
+      if (flagType === 'level' || flagType === 'both')
+        note += `<div class="conflict-note note-level">&#9888; Levels: ${levels.map(escHtml).join(' vs ')}</div>`;
 
       return `<div class="table-row ${rowClass}" data-user="${escAttr(user)}">
         <div class="flag-cell">${flagCell}</div>
@@ -469,8 +474,9 @@
     const lines = ['Username,G-codes,Teams,Levels,Count,Team conflict,Level conflict'];
     allRows.forEach(([u, c]) => {
       const sorted = [...c].sort();
-      const teams = [...new Set(sorted.map(getTeam))].sort().join('; ');
-      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort().join('; ');
+      const parsed = sorted.map(parseCode);
+      const teams = [...new Set(parsed.map(p => p.team))].sort().join('; ');
+      const levels = [...new Set(parsed.map(p => p.level).filter(Boolean))].sort().join('; ');
       const ft = getFlagType(c);
       lines.push(`"${u}","${sorted.join('; ')}","${teams}","${levels}",${c.size},"${['team','both'].includes(ft)?'YES':''}","${['level','both'].includes(ft)?'YES':''}"`);
     });
@@ -483,8 +489,9 @@
     const lines = ['Username,G-codes,Teams,Levels,Count,Team conflict,Level conflict'];
     flagged.forEach(([u, c]) => {
       const sorted = [...c].sort();
-      const teams = [...new Set(sorted.map(getTeam))].sort().join('; ');
-      const levels = [...new Set(sorted.map(getLevel).filter(Boolean))].sort().join('; ');
+      const parsed = sorted.map(parseCode);
+      const teams = [...new Set(parsed.map(p => p.team))].sort().join('; ');
+      const levels = [...new Set(parsed.map(p => p.level).filter(Boolean))].sort().join('; ');
       const ft = getFlagType(c);
       lines.push(`"${u}","${sorted.join('; ')}","${teams}","${levels}",${c.size},"${['team','both'].includes(ft)?'YES':''}","${['level','both'].includes(ft)?'YES':''}"`);
     });
